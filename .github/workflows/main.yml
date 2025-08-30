@@ -10,6 +10,7 @@ on:
       - main
       - master
       - develop
+      - cicd_demo
 
 jobs:
   build:
