@@ -12,6 +12,10 @@ on:
       - develop
       - cicd_demo
 
+permissions:
+  contents: write
+  pull-requests: read
+
 jobs:
   build:
     name: Build & Release
@@ -47,6 +51,21 @@ jobs:
           cp -r Runner.app Payload/
           zip -r app.ipa Payload
 
+      - name: Upload Android APK Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-v1.0.${{ github.run_number }}
+          path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+
+      - name: Upload iOS IPA Artifacts (only on push to main/master)
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa-v1.0.${{ github.run_number }}
+          path: build/ios/iphoneos/app.ipa
+          retention-days: 30
+
       - name: Create Release (only on push to main/master)
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: ncipollo/release-action@v1
@@ -60,3 +79,7 @@ jobs:
             
             Changes in this release:
             ${{ github.event.head_commit.message }}
+            
+            ## Downloads
+            - **Android APK**: Download from the artifacts below or from this release
+            - **iOS IPA**: Download from this release (main/master pushes only)
